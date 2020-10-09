@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600&display=swap" rel="stylesheet">
+        <style>
+            div.mainPanel
+            {
+                display: flex;
+            }
+            div.tablePanel
+            {
+                margin: 0 2vw;
+                border: 2px;
+                border-radius: 10px;
+                border-style: solid;
+                padding: 1%;
+            }
+            div.elementsPanel
+            {
+                border: 2px;
+                border-radius: 10px;
+                border-style: solid;
+                padding: 1%;
+            }
+            div.elementCountPanel
+            {
+                font-family: 'Rubik', sans-serif;
+                font-size: 2vw;
+                padding: 1%;
+            }
+            div.elementNamesPanel
+            {
+                font-family: 'Rubik', sans-serif;
+                font-size: 1vw;
+                padding: 1%;
+            }
+            div.matrixTable
+            {
+                display:table;
+            }
+            div.matrixRow
+            {
+                display: table-row;
+            }
+            div.matrixElement
+            {
+                display: table-cell;
+                padding: 10px;
+                font-family: 'Rubik', sans-serif;
+                text-align: center;
+                vertical-align:middle;
+            }
+            input.elementCountInput
+            {
+                width: 5vw;
+                height: 5vw;
+                box-sizing: border-box;
+                border: 2px;
+                border-radius: 10px;
+                font-family: 'Rubik', sans-serif;
+                border-style: solid;
+                font-size: 2.5vw;
+                text-align: center;
+            }
+            input.elementNameInput
+            {
+                height: 5vh;
+                font-family: 'Rubik', sans-serif;
+                box-sizing: border-box;
+                font-size: 3vh;
+            }
+            textArea.tableElementInput
+            {
+                border: 2px;
+                border-radius: 10px;
+                border-style: solid;
+                box-sizing: border-box;
+                width: 100%;
+                height: 100%;
+                font-family: 'Rubik', sans-serif;
+                font-size: 1vw;
+                text-align: center;
+            }
+            input::-webkit-outer-spin-button,
+            input::-webkit-inner-spin-button
+            {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+            input[type=number]
+            {
+                -moz-appearance: textfield;
+            }
+        </style>
+    </head>
+    <body>
+        <label style="font-family: 'Rubik', sans-serif; font-size: 3vw; font-weight: 600;">Pairing Table</label>
+        <br>
+        <br>
+        <br>
+        <div class="mainPanel">
+            <div class="elementsPanel">
+                <div class="elementCountPanel">
+                    <label>Element Count:</label>
+                    <br>
+                    <input type="number" class="elementCountInput" id="elementCountInput" oninput="RefreshElementCount()">
+                </div>
+                <div class="elementNamesPanel" id="elementNamesPanel">
+                </div>
+            </div>
+            <div class="tablePanel">
+                <label style="font-family: 'Rubik', sans-serif; font-size: 1vw;">Size: </label>
+                <input type="range" id="tableScale" min="1" max="20" value="10" oninput="SetTableScale(value)">
+                <div class="matrixTable" id="matrixTable">
+                    
+                </div>
+            </div>
+        </div>
+    </body>
+   <script>
+           let elementCount = parseInt(document.getElementById("elementCountInput").value);
+    
+    let originalScale = 10;
+    if(elementCount < 0 || isNaN(elementCount))
+        elementCount = 0;
+    let tableContents = [];
+    let elementNames = [];
+    document.getElementById("elementCountInput").value = elementCount;
+    SetElementNames();
+	RefreshElementCount();
+	
+	function RefreshElementCount () {
+        var container = document.getElementById("elementNamesPanel");
+        while(container.childElementCount > 0)
+            container.removeChild(container.lastChild);
+        elementCount = parseInt(document.getElementById("elementCountInput").value);
+        if(elementCount < 0)
+            elementCount = 0;
+        document.getElementById("elementCountInput").value = elementCount;
+		if(elementCount == null)
+			elementCount = 0;
+        for (i=0;i<elementCount;i++){
+            let label = document.createElement("label")
+            label.innerHTML = "Element " + (i+1) + ": ";
+            container.appendChild(label);
+            var input = document.createElement("input");
+            input.type = "text";
+            input.name = "member" + i;
+            input.id = "element"+(i+1);
+            input.value = input.id;
+            input.className = "elementNameInput";
+            if(i < elementNames.length)
+                input.value = elementNames[i];
+			input.addEventListener("input", RefreshTable);
+            container.appendChild(input);
+            container.appendChild(document.createElement("br"));
+            container.appendChild(document.createElement("br"));
+        }
+		RefreshTable();
+    }
+
+    function SetTableScale()
+    {
+
+    }
+    
+    function SetElementNames()
+    {
+        elementNames = [];
+        for(let i = 1; i < elementCount+1; i++)
+        {
+            let element = document.getElementById("element"+i);
+            if(element)
+                elementNames.push(element.value);
+            else
+                elementNames.push("element"+i);
+        }
+    }
+	
+	function RefreshTable(){
+        SetElementNames();
+	    var tbdy = document.getElementById("matrixTable");
+        while (tbdy.hasChildNodes())
+            tbdy.removeChild(tbdy.lastChild);
+        for (var i = 0; i < elementCount+1; i++)
+        {
+            var tr = document.createElement("div");
+            tr.className = "matrixRow"
+            for (var j = 0; j < elementCount+1; j++)
+            {
+	        	if(j > elementCount+1-i)
+	        		continue;
+	        	let isInput = false;
+                var td = document.createElement("div");
+	        	var text = "";
+	        	if(i == 0 && j != 0)
+	        		text = elementNames[elementCount-j];
+	        	else if(i != 0 && j== 0)
+	        		text = elementNames[i-1];
+	        	else if( i!= 0 && j != 0)
+	        	{
+                    let element = document.createElement("TEXTAREA");
+                    element.className = "tableElementInput";
+                    element.id = i+","+j;
+                    element.value = CheckIfHasText(i,elementCount+1-j);
+                    element.addEventListener("change", SaveTableContents)
+	        		td.appendChild(element);
+	        		isInput = true;
+	        	}
+	        	if(!isInput )
+	        	{
+                    if(i != 0 || j != 0)
+                    {
+                        td.style.outline = "2px solid";
+                        td.style.outlineOffset = "-8px";
+                        td.style.outlineColor = "lightslategray"
+                    }
+                    
+                    //td.style.border = "2px";
+                    //td.style.borderRadius = "10px";
+                    //td.style.borderStyle = "solid";
+                    //td.style.borderColor = "lightslategray";
+	        		let child = document.createTextNode(text);
+	        		td.appendChild(child);
+	        	}
+                td.className = "matrixElement";
+                td.id = "matrixElement"
+                tr.appendChild(td)
+	        }
+            tbdy.appendChild(tr);
+        }
+        SetTableScale(document.getElementById("tableScale").value);
+        SetNewTable();
+        SaveTableContents();
+    }
+
+    function SetTableScale(newValue)
+    {
+        console.log(newValue);
+        let newScale = (newValue/10.0);
+        console.log(newScale);
+        let elements = document.getElementsByClassName("matrixElement");
+        for(let i = 0; i < elements.length; i++)
+        {
+            elements[i].style.fontSize = (newScale*1.5)+"vw";
+            elements[i].style.width = (newScale*10) +"vw";
+            elements[i].style.height = (newScale*10) +"vw";
+        }
+        
+    }
+
+    function SetNewTable()
+    {
+        tableContents = [];
+        for(let i = 0; i <elementCount+1; i++)
+        {
+            let columnArray = []
+            for(let f = 0; f <elementCount+1; f++)
+            {
+                if(f > elementCount+1-i)
+                    continue;
+                columnArray.push("");
+            }
+            tableContents.push(columnArray);
+        }
+    }
+
+    function SaveTableContents()
+    {
+        var elements = document.getElementsByClassName("tableElementInput");
+        for(let i = 0; i < elements.length; i++)
+        {
+
+            let element = elements[i];
+            if(element.value == "")
+                continue;
+            let row = parseInt(element.id.charAt(0));
+            let column = parseInt(element.id.charAt(2));
+            tableContents[row][elementCount+1-column] = element.value;
+        }
+    }
+
+    function WriteTableContents()
+    {
+        for(let r = 0; r < tableContents.length; r++)
+        {
+            for(let c = 0; c < tableContents[r].length; c++)
+            {
+                console.log("r: " + r + ", c: "+ c);
+                console.log(tableContents[r][c]);
+            }
+        }
+    }
+
+    function CheckIfHasText(row, column)
+    {
+        if(row < tableContents.length && column < tableContents[row].length)
+            return tableContents[row][column];
+        return "";
+    }
+   </script>
+</html>
